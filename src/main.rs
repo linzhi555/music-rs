@@ -130,7 +130,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
     let normal_style = Style::default().bg(Color::Blue);
-    let header_cells = ["Header1", "Header2", "Header3"]
+    let header_cells = ["you musics"]
         .iter()
         .map(|h| Cell::from(*h).style(Style::default().fg(Color::Red)));
     let header = Row::new(header_cells)
