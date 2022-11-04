@@ -1,5 +1,5 @@
 mod mp3;
-use mp3::play;
+use mp3::Player;
 
 //fn main() {
 //    println!("this is a music app");
@@ -24,6 +24,7 @@ use tui::{
 struct App<'a> {
     state: TableState,
     items: Vec<Vec<&'a str>>,
+    player: Player,
 }
 
 impl<'a> App<'a> {
@@ -34,6 +35,7 @@ impl<'a> App<'a> {
                 vec!["/home/lin/Music/SerumProtein - タンポポ.mp3"],
                 vec!["/home/lin/Music/Jousboxx-BuzzerBeater.mp3"],
             ],
+            player: Player::new(),
         }
     }
     pub fn next(&mut self) {
@@ -47,7 +49,7 @@ impl<'a> App<'a> {
             }
             None => 0,
         };
-         
+
         self.state.select(Some(i));
     }
 
@@ -64,15 +66,12 @@ impl<'a> App<'a> {
         };
         self.state.select(Some(i));
     }
-    pub fn cur_music(&mut self)->String{
+    pub fn cur_music(&mut self) -> String {
         let i = match self.state.selected() {
-            Some(i) => {
-                i
-            }
+            Some(i) => i,
             None => 0,
         };
-        return self.items.get(i).unwrap().get(0).unwrap().to_string()
-
+        return self.items.get(i).unwrap().get(0).unwrap().to_string();
     }
 }
 
@@ -115,8 +114,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                 KeyCode::Up => app.previous(),
                 KeyCode::Enter => {
                     let music = app.cur_music();
-                    play(&music);
-                },
+                    app.player.play(&music);
+                }
                 _ => {}
             }
         }

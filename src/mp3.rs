@@ -1,11 +1,23 @@
 use std::io::BufReader;
-use std::{thread,time};
 
-pub fn play(path: &str) {
-    let (_stream, handle) = rodio::OutputStream::try_default().unwrap();
-    let sink = rodio::Sink::try_new(&handle).unwrap();
-
-    let file = std::fs::File::open(path).unwrap();
-    sink.append(rodio::Decoder::new(BufReader::new(file)).unwrap());
-    thread::sleep(time::Duration::from_secs(20));
+pub struct Player {
+    sink: rodio::Sink,
+    _stream: rodio::OutputStream,
+    _handle: rodio::OutputStreamHandle,
+}
+impl Player {
+    pub fn new() -> Self {
+        let (_stream, _handle) = rodio::OutputStream::try_default().unwrap();
+        let sink = rodio::Sink::try_new(&_handle).unwrap();
+        return Player {
+            sink,
+            _stream,
+            _handle,
+        };
+    }
+    pub fn play(&self, path: &str) {
+        let file = std::fs::File::open(path).unwrap();
+        self.sink
+            .append(rodio::Decoder::new(BufReader::new(file)).unwrap());
+    }
 }
