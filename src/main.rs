@@ -73,6 +73,13 @@ impl<'a> App<'a> {
         };
         return self.items.get(i).unwrap().get(0).unwrap().to_string();
     }
+    pub fn start_play_cur_music(&mut self){
+        let music = self.cur_music();
+        self.player.play(&music);
+    }
+    pub fn toggle_pause(&mut self){
+        self.player.toggle_pause()
+    }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -112,10 +119,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                 KeyCode::Char('q') => return Ok(()),
                 KeyCode::Down => app.next(),
                 KeyCode::Up => app.previous(),
-                KeyCode::Enter => {
-                    let music = app.cur_music();
-                    app.player.play(&music);
-                }
+                KeyCode::Enter => app.start_play_cur_music(),
+                KeyCode::Char(' ') => app.toggle_pause(),
                 _ => {}
             }
         }
