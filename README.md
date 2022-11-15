@@ -13,4 +13,4 @@ music-rs
 ```
 
 ## screeshot
-!()[./running.png]
+![](./running.png)
