@@ -17,21 +17,20 @@ impl Player {
     }
     pub fn play(&mut self, path: &str) {
         let file = std::fs::File::open(path).unwrap();
-        if !self.sink.empty(){
+        if !self.sink.empty() {
             self.sink.stop()
-
         }
-        self.sink =  rodio::Sink::try_new(&self._handle).unwrap();
+        self.sink = rodio::Sink::try_new(&self._handle).unwrap();
         self.sink
             .append(rodio::Decoder::new(BufReader::new(file)).unwrap());
     }
-    pub fn toggle_pause(&self){
-        if self.sink.empty(){
+    pub fn toggle_pause(&self) {
+        if self.sink.empty() {
             return;
         }
-        if self.sink.is_paused(){
+        if self.sink.is_paused() {
             self.sink.play()
-        }else {
+        } else {
             self.sink.pause();
         }
     }

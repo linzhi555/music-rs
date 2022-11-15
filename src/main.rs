@@ -1,6 +1,6 @@
 mod mp3;
 use mp3::Player;
-
+use std::fs;
 //fn main() {
 //    println!("this is a music app");
 //    println!("v1.0");
@@ -21,20 +21,17 @@ use tui::{
     Frame, Terminal,
 };
 
-struct App<'a> {
+struct App {
     state: TableState,
-    items: Vec<Vec<&'a str>>,
+    items: Vec<Vec<String>>,
     player: Player,
 }
 
-impl<'a> App<'a> {
-    fn new() -> App<'a> {
+impl App {
+    fn new(musics: Vec<Vec<String>>) -> App {
         App {
             state: TableState::default(),
-            items: vec![
-                vec!["/home/lin/Music/SerumProtein - タンポポ.mp3"],
-                vec!["/home/lin/Music/Jousboxx-BuzzerBeater.mp3"],
-            ],
+            items: musics,
             player: Player::new(),
         }
     }
@@ -73,16 +70,31 @@ impl<'a> App<'a> {
         };
         return self.items.get(i).unwrap().get(0).unwrap().to_string();
     }
-    pub fn start_play_cur_music(&mut self){
+    pub fn start_play_cur_music(&mut self) {
         let music = self.cur_music();
         self.player.play(&music);
     }
-    pub fn toggle_pause(&mut self){
+    pub fn toggle_pause(&mut self) {
         self.player.toggle_pause()
     }
 }
 
+fn find_musics(path: &str) -> Vec<Vec<String>> {
+    let paths = fs::read_dir(path).unwrap();
+    let mut musics: Vec<Vec<String>> = vec![];
+    for path in paths {
+        let file_name = path.unwrap().path().to_str().unwrap().to_string();
+        if file_name.ends_with(".mp3"){
+            musics.push(vec![file_name]);
+        }
+    }
+    musics
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
+    //let musics = find_musics("./");
+    //println!("{:?}",musics);
+
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -91,7 +103,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let app = App::new();
+    let app = App::new(find_musics("./"));
     let res = run_app(&mut terminal, app);
 
     // restore terminal
@@ -149,7 +161,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .max()
             .unwrap_or(0)
             + 1;
-        let cells = item.iter().map(|c| Cell::from(*c));
+        let cells = item.iter().map(|c| Cell::from(c.as_str()));
         Row::new(cells).height(height as u16).bottom_margin(1)
     });
     let t = Table::new(rows)
