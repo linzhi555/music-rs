@@ -34,4 +34,8 @@ impl Player {
             self.sink.pause();
         }
     }
+    pub fn empty(&self) -> bool{
+        return self.sink.empty()
+    }
+
 }

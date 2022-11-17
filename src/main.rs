@@ -17,22 +17,33 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Cell, Row, Table, TableState},
+    text::{Span, Spans, Text},
+    widgets::{Block, Borders, Cell, Row, Table,List, ListItem, TableState,Paragraph},
     Frame, Terminal,
 };
 
+enum PlayState{
+    Idle,
+    Running,
+    Pause,
+}
+
 struct App {
+    playstate: PlayState,
     state: TableState,
     items: Vec<Vec<String>>,
     player: Player,
+    messages: String,
 }
 
 impl App {
     fn new(musics: Vec<Vec<String>>) -> App {
         App {
+            playstate:PlayState::Idle,
             state: TableState::default(),
             items: musics,
             player: Player::new(),
+            messages: String::from("welcome"),
         }
     }
     pub fn next(&mut self) {
@@ -71,11 +82,14 @@ impl App {
         return self.items.get(i).unwrap().get(0).unwrap().to_string();
     }
     pub fn start_play_cur_music(&mut self) {
+        self.playstate = PlayState::Running;
         let music = self.cur_music();
         self.player.play(&music);
+        self.messages = String::from("playnewsome");
     }
     pub fn toggle_pause(&mut self) {
-        self.player.toggle_pause()
+        self.playstate = PlayState::Pause;
+        self.player.toggle_pause();
     }
 }
 
@@ -125,7 +139,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
-
+        
+        let mut a = false;
         if let Event::Key(key) = event::read()? {
             match key.code {
                 KeyCode::Char('q') => return Ok(()),
@@ -133,15 +148,37 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                 KeyCode::Up => app.previous(),
                 KeyCode::Enter => app.start_play_cur_music(),
                 KeyCode::Char(' ') => app.toggle_pause(),
+                KeyCode::Char('z') => a=true,
                 _ => {}
             }
         }
+
+        //if a{
+        //    app.next() ;
+        //    app.start_play_cur_music();
+        //    app.messages = String::from("try new song");
+        //}
+
+
+        match app.playstate {
+            PlayState::Running => {
+                if (app.player.empty()) || (a){
+                //if a{
+                    app.next() ;
+                    app.start_play_cur_music();
+                    app.messages = String::from("try new song");
+                }
+            }
+            _ => {}
+        }        
+
+
     }
 }
 
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let rects = Layout::default()
-        .constraints([Constraint::Percentage(100)].as_ref())
+        .constraints([Constraint::Percentage(80),Constraint::Length(1)].as_ref())
         .margin(5)
         .split(f.size());
 
@@ -175,4 +212,39 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             Constraint::Min(10),
         ]);
     f.render_stateful_widget(t, rects[0], &mut app.state);
+    
+
+
+    let (msg, style)= (
+
+            vec![
+                Span::raw(app.messages.as_str()),
+            ],
+            Style::default(),
+
+
+    );
+
+
+
+    let mut text = Text::from(Spans::from(msg));
+    text.patch_style(style);
+    let help_message = Paragraph::new(text);
+    f.render_widget(help_message, rects[1]);
+
+
+
+//    let messages: Vec<ListItem> = app
+//        .messages
+//        .iter()
+//        .enumerate()
+//        .map(|(i, m)| {
+//            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m)))];
+//            ListItem::new(content)
+//        })
+//        .collect();
+//    let messages =
+//        List::new(messages).block(Block::default().borders(Borders::ALL).title("Mess"));
+//    f.render_widget(messages, rects[0]);
+
 }
