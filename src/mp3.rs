@@ -1,7 +1,7 @@
 use std::io::BufReader;
 
 pub struct Player {
-    sink: rodio::Sink,
+    pub sink: rodio::Sink,
     _stream: rodio::OutputStream,
     _handle: rodio::OutputStreamHandle,
 }
@@ -34,8 +34,7 @@ impl Player {
             self.sink.pause();
         }
     }
-    pub fn empty(&self) -> bool{
-        return self.sink.empty()
+    pub fn empty(&self) -> bool {
+        return self.sink.empty();
     }
-
 }
